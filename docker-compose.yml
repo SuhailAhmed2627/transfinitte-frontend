@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+   web:
+      container_name: transfinitte_frontend
+      image: transfinitte_frontend
+      build:
+         context: .
+      ports:
+         - "8000:80"
+      restart: always
