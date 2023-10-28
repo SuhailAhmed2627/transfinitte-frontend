@@ -11,6 +11,7 @@ import { QueryClientProvider } from "react-query";
 import { PersistGate } from "redux-persist/integration/react";
 import { queryClient } from "./utils/queries";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 
 const App = () => {
 	return (

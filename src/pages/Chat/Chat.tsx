@@ -7,37 +7,15 @@ import {
 	MessageModel,
 	TypingIndicator,
 } from "@chatscope/chat-ui-kit-react";
-import { dataFetch, getUser } from "../../utils/helpers";
-import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
+import { dataFetch, getUser, showNotification } from "../../utils/helpers";
 import { Button, Center, Loader, Modal, Stack, Text } from "@mantine/core";
 import { useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { useDisclosure } from "@mantine/hooks";
 import { Rating } from "react-simple-star-rating";
-
-const someMessages: MessageModel[] = [
-	{
-		message: "Hi",
-		direction: "incoming",
-		position: "first",
-	},
-	{
-		message: "Hello",
-		direction: "outgoing",
-		position: "normal",
-	},
-	{
-		message: "How are you?",
-		direction: "incoming",
-		position: "normal",
-	},
-	{
-		message: "I'm fine",
-		direction: "outgoing",
-		position: "last",
-	},
-];
+import { SpecialInputs } from "../../components";
+import "./main.scss";
 
 type ServerConversation = {
 	chat_id: number;
@@ -45,31 +23,6 @@ type ServerConversation = {
 	response: string;
 	feedback: number;
 	created_at: string;
-};
-
-const sampleServerMessages: ServerConversation[] = [
-	{
-		chat_id: 1,
-		text: "Hi",
-		response: "Hello",
-		feedback: -1,
-		created_at: "2021-08-26T13:17:00.000000Z",
-	},
-	{
-		chat_id: 2,
-		text: "How are you?",
-		response: "I'm fine",
-		feedback: -1,
-		created_at: "2021-08-26T13:17:00.000000Z",
-	},
-];
-
-const newSampleServerMessage: ServerConversation = {
-	chat_id: 3,
-	text: "What is your name?",
-	response: "My name is Tle, Bottle",
-	feedback: -1,
-	created_at: "2021-08-26T13:17:00.000000Z",
 };
 
 const processSeverMessages = (
@@ -115,24 +68,30 @@ interface NewMessage {
 const Chat = () => {
 	const user = getUser();
 	const [messages, setMessages] = useState<MessageModel[] | null>(null);
-	const [opened, { open, close }] = useDisclosure(false);
+	const ratingModal = useDisclosure(false);
+	const specialModal = useDisclosure(false);
 	const [rateId, setRateId] = useState<string | null>(null);
 	const [ratingValue, setRatingValue] = useState(0);
 	const navigate = useNavigate();
+	const [currentInput, setCurrentInput] = useState<string>("");
 
 	const previousMessagesQuery = useQuery({
 		queryKey: "previousMessages",
 		queryFn: async () => {
 			return await dataFetch({
+				user: user,
 				url: "/chat/all",
 				method: "GET",
 			});
 		},
 		onSuccess: async (res) => {
-			if (true || res.ok) {
+			if (res.ok) {
 				const data = await res.json();
-				setMessages(processSeverMessages(sampleServerMessages));
+				setMessages(processSeverMessages(data.chat_history));
 			}
+		},
+		onError: () => {
+			showNotification("Error", "Some error occured", "error");
 		},
 	});
 
@@ -140,22 +99,23 @@ const Chat = () => {
 		mutationKey: "sendMessage",
 		mutationFn: async (newMessage: NewMessage) => {
 			return await dataFetch({
-				url: "/chat/new",
+				user: user,
+				url: "/chat/new_test",
 				method: "POST",
 				body: newMessage,
 			});
 		},
 		onSuccess: async (res) => {
-			if (true || res.ok) {
+			if (res.ok) {
 				const data = await res.json();
 				if (messages === null) {
 					return;
 				}
-				setMessages([
-					...messages,
-					...processSeverMessages([newSampleServerMessage]),
-				]);
+				setMessages([...messages, ...processSeverMessages([data])]);
 			}
+		},
+		onError: () => {
+			showNotification("Error", "Some error occured", "error");
 		},
 	});
 
@@ -169,35 +129,33 @@ const Chat = () => {
 			chatId: string;
 		}) => {
 			return await dataFetch({
-				url: "/chat/rate",
+				user: user,
+				url: "/chat/feedback",
 				method: "POST",
 				body: {
-					stars: stars,
-					chatId: chatId,
+					feedback: stars,
+					chat_id: chatId,
 				},
 			});
 		},
 		onSuccess: async (res) => {
-			if (true || res.ok) {
-				// const data = await res.json();
-				const data = {
-					chatId: 2,
-					ratingValue: 4,
-				};
+			if (res.ok) {
+				const data = await res.json();
 				if (messages === null) {
 					return;
 				}
 				const updatedMessages = [...messages];
 				updatedMessages.forEach((m) => {
-					if (m.payload && (m.payload as any).chatId === data.chatId) {
-						(m.payload as any).rating = data.ratingValue;
+					if (m.payload && (m.payload as any).chatId === data.chat_id) {
+						(m.payload as any).rating = data.feedback as number;
 					}
 				});
 				setMessages(updatedMessages);
-				close();
-				setRateId(null);
-				setRatingValue(0);
+				ratingModal[1].close();
 			}
+		},
+		onError: () => {
+			showNotification("Error", "Some error occured", "error");
 		},
 	});
 
@@ -210,7 +168,7 @@ const Chat = () => {
 		);
 	}
 
-	if (previousMessagesQuery.isLoading) {
+	if (false && previousMessagesQuery.isLoading) {
 		return (
 			<Center className="h-screen w-screen">
 				<Loader />
@@ -219,7 +177,7 @@ const Chat = () => {
 	}
 
 	if (
-		previousMessagesQuery.isError ||
+		(false && previousMessagesQuery.isError) ||
 		(previousMessagesQuery.isSuccess && messages === null)
 	) {
 		return (
@@ -232,11 +190,10 @@ const Chat = () => {
 	return (
 		<>
 			<Modal
-				opened={opened}
+				opened={ratingModal[0]}
 				onClose={() => {
 					setRateId(null);
 					setRatingValue(0);
-					close();
 				}}
 				title="Rate the Response"
 				centered
@@ -251,6 +208,7 @@ const Chat = () => {
 							}}
 						>
 							<Rating
+								onClick={(rate) => setRatingValue(rate)}
 								fillColorArray={[
 									"#f14f45",
 									"#f16c45",
@@ -269,10 +227,23 @@ const Chat = () => {
 								chatId: rateId as string,
 							});
 						}}
+						loading={rateMutation.isLoading}
 					>
 						Submit Rating
 					</Button>
 				</Stack>
+			</Modal>
+			<Modal
+				opened={specialModal[0]}
+				onClose={() => {}}
+				title="Multiple Input Methods"
+				centered
+			>
+				<SpecialInputs
+					setCurrentInput={setCurrentInput}
+					user={user}
+					closeModal={specialModal[1].close}
+				/>
 			</Modal>
 			<Center className="h-screen w-screen bg-gray-100">
 				<div className=" h-[95%] w-[60%]">
@@ -299,7 +270,7 @@ const Chat = () => {
 																	(message.payload as any)
 																		.chatId as string
 																);
-																open();
+																ratingModal[1].open();
 															}}
 															className=" text-xs underline cursor-pointer"
 														>
@@ -342,13 +313,15 @@ const Chat = () => {
 									} else {
 										setMessages([
 											...messages,
-											makeNewMessage(newSampleServerMessage.text),
+											makeNewMessage(message),
 										]);
 									}
 									sendMessageMutation.mutate({
-										text: newSampleServerMessage.text,
+										text: message,
 									});
 								}}
+								onChange={(m) => setCurrentInput(m)}
+								onAttachClick={() => specialModal[1].open()}
 								placeholder="Type message here"
 							/>
 						</ChatContainer>
