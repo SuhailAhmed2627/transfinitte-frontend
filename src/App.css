@@ -8,3 +8,22 @@ body::-webkit-scrollbar {
 .star-svg {
 	display: inline-block;
 }
+
+@keyframes spinAndPulse {
+	0% {
+	transform: rotate(0deg);
+	opacity: 1;
+	}
+	50% {
+	transform: rotate(180deg);
+	opacity: 0.5;
+	}
+	100% {
+	transform: rotate(360deg);
+	opacity: 1;
+	}
+}
+
+.mockup {
+	animation: spinAndPulse 15s linear infinite;
+}
