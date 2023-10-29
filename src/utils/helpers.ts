@@ -69,28 +69,5 @@ export const showNotification = (
 		title: title,
 		message: message,
 		color: color,
-		styles: {
-			title: {
-				color: "#F5F5F5",
-			},
-			description: {
-				color: "#F5F5F5",
-			},
-			root: {
-				backgroundColor: "rgba(0, 0, 0, 0.75)",
-				backdropFilter: "blur(10px)",
-				borderWidth: 0,
-			},
-			icon: {
-				scale: "1.25",
-				backgroundColor: "transparent",
-			},
-		},
-		classNames: {
-			icon: "bg-transparent",
-			title: "font-heading font-bold",
-			description: "font-body",
-			closeButton: "rounded-full transition-all",
-		},
 	});
 };

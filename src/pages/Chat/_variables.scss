@@ -23,7 +23,7 @@ $grid-breakpoints: (
 // Default font family
 //
 
-$default-font-family: Helvetica Neue, Segoe UI, Helvetica, Arial, sans-serif;
+$default-font-family: "Segoe UI", sans-serif;
 
 // Colors
 //
@@ -405,7 +405,7 @@ $main-container-color: $color-text !default;
 $main-container-bg-color: $default-bg-color !default;
 
 // Fonts
-$main-container-font-size: 1rem !default; // Font size for child elements are relative to this size
+$main-container-font-size: 16px !default; // Font size for child elements are relative to this size
 
 // Sizes
 $main-container-conversation-list-flex-basis: 300px !default;
@@ -673,7 +673,7 @@ $message-input-content-editor-disabled-bg-color: rgba(
 
 // Fonts
 $message-input-content-editor-font-family: $default-font-family !default;
-$message-input-content-editor-container-font-size: 0.94em !default;
+$message-input-content-editor-container-font-size: 16px !default;
 
 // Sizes
 $message-input-max-lines: 4;

@@ -1,0 +1,134 @@
+@import url("https://fonts.cdnfonts.com/css/segoe-ui-4");
+
+.cs-main-container {
+	background: linear-gradient(
+		90deg,
+		rgb(239, 242, 247) 0%,
+		7.60286%,
+		rgb(237, 240, 249) 15.2057%,
+		20.7513%,
+		rgb(235, 239, 248) 26.297%,
+		27.6386%,
+		rgb(235, 239, 248) 28.9803%,
+		38.2826%,
+		rgb(231, 237, 249) 47.585%,
+		48.1216%,
+		rgb(230, 236, 250) 48.6583%,
+		53.1306%,
+		rgb(228, 236, 249) 57.6029%,
+		61.5385%,
+		rgb(227, 234, 250) 65.4741%,
+		68.7835%,
+		rgb(222, 234, 250) 72.093%,
+		75.7603%,
+		rgb(219, 230, 248) 79.4275%,
+		82.8265%,
+		rgb(216, 229, 248) 86.2254%,
+		87.8354%,
+		rgb(213, 228, 249) 89.4454%,
+		91.8605%,
+		rgb(210, 226, 249) 94.2755%,
+		95.4383%,
+		rgb(209, 225, 248) 96.6011%,
+		98.3005%,
+		rgb(208, 224, 247) 100%
+	);
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+.cs-chat-container {
+	background: unset;
+}
+
+.cs-message-list {
+	background: unset;
+}
+
+.cs-message-input {
+	background: unset;
+}
+
+.cs-chat-container .cs-message-input {
+	background: unset;
+	border: none;
+}
+.cs-message-input__content-editor-wrapper {
+	background: #ffffff;
+	border-radius: 12px;
+	box-shadow: 0px 0.3px 0.9px rgba(0, 0, 0, 0.12),
+		0px 1.6px 3.6px rgba(0, 0, 0, 0.16);
+}
+.cs-message-input__content-editor[data-placeholder]:empty:before {
+	background: unset;
+}
+.cs-message-input__content-editor {
+	background: unset;
+}
+
+.cs-message-input__content-editor-container {
+	background: unset;
+}
+
+.cs-button > svg > path {
+	fill: #1b4aef !important;
+}
+
+.cs-chat-container .cs-input-toolbox {
+	margin-top: 20px;
+	background: unset;
+}
+
+.cs-input-toolbox {
+	margin-top: 5px;
+	justify-content: center;
+	align-items: center;
+}
+
+.cs-message {
+	margin-top: 0.2em;
+	margin-bottom: 0.2em;
+}
+.cs-message--outgoing .cs-message__content {
+	background: linear-gradient(130deg, #2870ea 20%, #1b4aef 77.5%) !important;
+	color: #ffffff !important;
+	box-shadow: 0px 0.3px 0.9px rgba(0, 0, 0, 0.12),
+		0px 1.6px 3.6px rgba(0, 0, 0, 0.16) !important;
+	border-radius: 0.7em 0.7em 0.7em 0.7em;
+}
+.cs-message.cs-message--outgoing.cs-message--first .cs-message__content {
+	background: linear-gradient(130deg, #2870ea 20%, #1b4aef 77.5%) !important;
+	color: #ffffff !important;
+	box-shadow: 0px 0.3px 0.9px rgba(0, 0, 0, 0.12),
+		0px 1.6px 3.6px rgba(0, 0, 0, 0.16) !important;
+	border-radius: 0.7em 0.7em 0.7em 0.7em;
+}
+
+.cs-message__content-wrapper {
+	padding: 5px;
+}
+
+.cs-message--incoming .cs-message__content {
+	background: rgba(255, 255, 255, 0.7);
+	box-shadow: 0px 0.3px 0.9px rgba(0, 0, 0, 0.12),
+		0px 1.6px 3.6px rgba(0, 0, 0, 0.16);
+	border: inherit;
+	border-radius: 0.7em 0.7em 0.7em 0.7em;
+}
+.cs-message.cs-message--incoming.cs-message--last .cs-message__content {
+	background: rgba(255, 255, 255, 0.7);
+	box-shadow: 0px 0.3px 0.9px rgba(0, 0, 0, 0.12),
+		0px 1.6px 3.6px rgba(0, 0, 0, 0.16);
+	border: inherit;
+	border-radius: 0.7em 0.7em 0.7em 0.7em;
+}
+
+.cs-message-list .cs-typing-indicator {
+	position: relative;
+}
+
+.cs-typing-indicator__dot {
+	background-color: #2870ea;
+}
+.cs-typing-indicator__text {
+	color: #2870ea;
+}

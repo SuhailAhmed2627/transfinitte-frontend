@@ -6,7 +6,13 @@ import { useState } from "react";
 import { dataFetch, showNotification } from "../../utils/helpers";
 import { User } from "../../type";
 import { useMutation } from "react-query";
-
+function blobToBase64(blob: Blob) {
+	return new Promise((resolve, _) => {
+		const reader = new FileReader();
+		reader.onloadend = () => resolve(reader.result);
+		reader.readAsDataURL(blob);
+	});
+}
 const SpecialInputs = ({
 	user,
 	setCurrentInput,
@@ -16,7 +22,6 @@ const SpecialInputs = ({
 	setCurrentInput: React.Dispatch<React.SetStateAction<string>>;
 	closeModal: () => void;
 }) => {
-	const iconStyle = { width: rem(12), height: rem(12) };
 	const [recordState, setRecordState] = useState<RecordState>(
 		RecordState.NONE
 	);
@@ -31,20 +36,15 @@ const SpecialInputs = ({
 			audioData: any;
 			language: string;
 		}) => {
-			console.log(audioData);
-
-			const file = new File([audioData.blob], "audio", {
-				type: audioData.type,
-			});
-
-			const data = new FormData();
-			data.append("audioFile", file);
-			data.append("language", language);
-
+			const data = await blobToBase64(audioData.blob);
 			return await dataFetch({
-				url: "/input/audio",
 				user: user,
-				body: data,
+				method: "POST",
+				url: "/input/voice",
+				body: {
+					lang: language,
+					data: data,
+				},
 			});
 		},
 		onSuccess: async (res) => {
@@ -55,8 +55,18 @@ const SpecialInputs = ({
 				return;
 			}
 			const data = await res.json();
+			if (data.query === null) {
+				showNotification(
+					"Oops!",
+					"Try Again, Unable to recognize",
+					"error"
+				);
+				setRecordState(RecordState.NONE);
+				setLanguage("english");
+				return;
+			}
 			closeModal();
-			setCurrentInput(data.text);
+			setCurrentInput(data.query);
 		},
 		onError: () => {
 			console.log("error");
@@ -70,72 +80,49 @@ const SpecialInputs = ({
 		setRecordState(RecordState.STOP);
 	};
 
-	const onStop = (audioData: any, language: string) => {
-		uploadAudio.mutate({ audioData, language });
-		setRecordState(RecordState.NONE);
-	};
-
 	return (
-		<Tabs defaultValue="translate">
-			<Tabs.List>
-				<Tabs.Tab
-					value="translate"
-					leftSection={<IconPhoto style={iconStyle} />}
-				>
-					Translate
-				</Tabs.Tab>
-				<Tabs.Tab
-					value="voice"
-					leftSection={<IconPhoto style={iconStyle} />}
-				>
-					Voice
-				</Tabs.Tab>
-			</Tabs.List>
-			<Tabs.Panel value="translate">Translate</Tabs.Panel>
-			<Tabs.Panel value="voice">
-				<Stack className=" items-center">
+		<Stack className=" items-center">
+			<AudioReactRecorder
+				canvasWidth={300}
+				state={recordState}
+				onStop={(audioData: any) => {
+					uploadAudio.mutate({ audioData, language });
+					setRecordState(RecordState.NONE);
+				}}
+			/>
+			<Select
+				w={300}
+				label="Select Language"
+				placeholder=""
+				data={[
 					{
-						<AudioReactRecorder
-							canvasWidth={300}
-							state={recordState}
-							onStop={onStop}
-						/>
-					}
-					<Select
-						w={300}
-						label="Select Language"
-						placeholder=""
-						data={[
-							{
-								value: "english",
-								label: "English",
-							},
-							{
-								value: "tamil",
-								label: "Tamil",
-							},
-							{
-								value: "hindi",
-								label: "Hindi",
-							},
-						]}
-						value={language}
-						onChange={(value) => setLanguage(value as string)}
-					/>
+						value: "english",
+						label: "English",
+					},
+					{
+						value: "tamil",
+						label: "Tamil",
+					},
+					{
+						value: "hindi",
+						label: "Hindi",
+					},
+				]}
+				value={language}
+				onChange={(value) => setLanguage(value as string)}
+			/>
 
-					{recordState === RecordState.NONE && (
-						<Button w={300} onClick={start}>
-							Start
-						</Button>
-					)}
-					{recordState === RecordState.START && (
-						<Button w={300} onClick={stop}>
-							Stop
-						</Button>
-					)}
-				</Stack>
-			</Tabs.Panel>
-		</Tabs>
+			{recordState === RecordState.NONE && (
+				<Button loading={uploadAudio.isLoading} w={300} onClick={start}>
+					Start
+				</Button>
+			)}
+			{recordState === RecordState.START && (
+				<Button loading={uploadAudio.isLoading} w={300} onClick={stop}>
+					Stop
+				</Button>
+			)}
+		</Stack>
 	);
 };
 

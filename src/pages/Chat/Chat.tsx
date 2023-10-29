@@ -6,9 +6,20 @@ import {
 	MessageInput,
 	MessageModel,
 	TypingIndicator,
+	InputToolbox,
+	InfoButton,
 } from "@chatscope/chat-ui-kit-react";
 import { dataFetch, getUser, showNotification } from "../../utils/helpers";
-import { Button, Center, Loader, Modal, Stack, Text } from "@mantine/core";
+import {
+	Button,
+	Center,
+	Loader,
+	Modal,
+	Stack,
+	Text,
+	TextInput,
+	Textarea,
+} from "@mantine/core";
 import { useState } from "react";
 import { useMutation, useQuery } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +27,8 @@ import { useDisclosure } from "@mantine/hooks";
 import { Rating } from "react-simple-star-rating";
 import { SpecialInputs } from "../../components";
 import "./main.scss";
+import "./override.css";
+import { IconMicrophone } from "@tabler/icons-react";
 
 type ServerConversation = {
 	chat_id: number;
@@ -74,6 +87,7 @@ const Chat = () => {
 	const [ratingValue, setRatingValue] = useState(0);
 	const navigate = useNavigate();
 	const [currentInput, setCurrentInput] = useState<string>("");
+	const [feedback, setFeedback] = useState<string>("");
 
 	const previousMessagesQuery = useQuery({
 		queryKey: "previousMessages",
@@ -133,6 +147,7 @@ const Chat = () => {
 				url: "/chat/feedback",
 				method: "POST",
 				body: {
+					feedback_string: feedback,
 					feedback: stars,
 					chat_id: chatId,
 				},
@@ -151,6 +166,8 @@ const Chat = () => {
 					}
 				});
 				setMessages(updatedMessages);
+				setFeedback("");
+				setRatingValue(0);
 				ratingModal[1].close();
 			}
 		},
@@ -168,7 +185,7 @@ const Chat = () => {
 		);
 	}
 
-	if (false && previousMessagesQuery.isLoading) {
+	if (previousMessagesQuery.isLoading) {
 		return (
 			<Center className="h-screen w-screen">
 				<Loader />
@@ -177,7 +194,7 @@ const Chat = () => {
 	}
 
 	if (
-		(false && previousMessagesQuery.isError) ||
+		previousMessagesQuery.isError ||
 		(previousMessagesQuery.isSuccess && messages === null)
 	) {
 		return (
@@ -190,8 +207,13 @@ const Chat = () => {
 	return (
 		<>
 			<Modal
+				overlayProps={{
+					backgroundOpacity: 0.55,
+					blur: 3,
+				}}
 				opened={ratingModal[0]}
 				onClose={() => {
+					ratingModal[1].close();
 					setRateId(null);
 					setRatingValue(0);
 				}}
@@ -199,7 +221,16 @@ const Chat = () => {
 				centered
 			>
 				<Stack>
-					<Center>
+					<Stack className="items-center">
+						<Textarea
+							value={feedback}
+							onChange={(e) => setFeedback(e.currentTarget.value)}
+							w={300}
+							autosize
+							minRows={3}
+							maxRows={6}
+							placeholder="Enter your feedback"
+						/>
 						<div
 							style={{
 								direction: "ltr",
@@ -219,7 +250,7 @@ const Chat = () => {
 								initialValue={ratingValue}
 							/>
 						</div>
-					</Center>
+					</Stack>
 					<Button
 						onClick={() => {
 							rateMutation.mutate({
@@ -234,9 +265,15 @@ const Chat = () => {
 				</Stack>
 			</Modal>
 			<Modal
+				overlayProps={{
+					backgroundOpacity: 0.55,
+					blur: 3,
+				}}
 				opened={specialModal[0]}
-				onClose={() => {}}
-				title="Multiple Input Methods"
+				onClose={() => {
+					specialModal[1].close();
+				}}
+				title="Voice to text"
 				centered
 			>
 				<SpecialInputs
@@ -246,10 +283,10 @@ const Chat = () => {
 				/>
 			</Modal>
 			<Center className="h-screen w-screen bg-gray-100">
-				<div className=" h-[95%] w-[60%]">
+				<div className=" h-full w-full">
 					<MainContainer>
 						<ChatContainer>
-							<MessageList>
+							<MessageList autoScrollToBottomOnMount={true}>
 								{messages !== null &&
 									messages.map((message, index) => (
 										<Message
@@ -301,13 +338,14 @@ const Chat = () => {
 									))}
 								{sendMessageMutation.isLoading && (
 									<TypingIndicator
-										className="h-[unset]"
+										className="h-[unset] bg-transparent"
 										content="Bot is typing"
 									/>
 								)}
 							</MessageList>
 							<MessageInput
 								onSend={(message) => {
+									setCurrentInput("");
 									if (messages === null) {
 										setMessages([makeNewMessage(message)]);
 									} else {
@@ -320,10 +358,23 @@ const Chat = () => {
 										text: message,
 									});
 								}}
+								attachButton={false}
+								value={currentInput}
 								onChange={(m) => setCurrentInput(m)}
 								onAttachClick={() => specialModal[1].open()}
-								placeholder="Type message here"
+								placeholder="Ask me anything..."
 							/>
+							<InputToolbox>
+								<Button
+									onClick={() => {
+										specialModal[1].open();
+									}}
+									radius="xl"
+									rightSection={<IconMicrophone size={18} />}
+								>
+									Use Voice
+								</Button>
+							</InputToolbox>
 						</ChatContainer>
 					</MainContainer>
 				</div>
